@@ -35,9 +35,11 @@ packJobParameters = function(parameters){
 #' @examples
 runJob = function(token){
   cat("Running job with token",token,"\n")
-  params = readRDS(token)
-  toSave = list(result=params$fun(params),
-                params=params)
+  myparams <- readRDS(token)
+  print(myparams)
+  targetFunc = myparams$fun
+  toSave = list(result=do.call("targetFunc",myparams),
+                params=myparams)
   saveRDS(toSave,paste0(token,"_out.rds"))
 }
 
