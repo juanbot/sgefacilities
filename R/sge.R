@@ -122,26 +122,29 @@ waitForJobs = function(handlers,
   while(sum(waitForReady) < length(handlers) & elapsed < timeLimit){
     indexes = which(!waitForReady)
     for(index in indexes){
-      cat("Checking for",handlers[[index]]$outfile,"\n")
-      if(file.exists(handlers[[index]]$outfile)){
-        cat("Job from",handlers[[index]]$outfile,"finished\n")
-        responses[[index]] = readRDS(handlers[[index]]$outfile)
-        waitForReady[index] = T
-        file.remove(handlers[[index]]$outfile)
-        file.remove(handlers[[index]]$paramfile)
-        if(removeLogs){
-          file.remove(handlers[[index]]$logfile)
-          file.remove(handlers[[index]]$errfile)
-        }
-      }else{
-        cat("Checking state of",handlers[[index]]$jobname,"\n")
-
-        if(!jobRunning(handlers[[index]]$jobname)){
-          cat("No results and no job running:",handlers[[index]]$jobname,"\n")
-          responses[[index]] = NULL
+      if(!is.null(handlers[[index]])){
+        cat("Checking for",handlers[[index]]$outfile,"\n")
+        if(file.exists(handlers[[index]]$outfile)){
+          cat("Job from",handlers[[index]]$outfile,"finished\n")
+          responses[[index]] = readRDS(handlers[[index]]$outfile)
           waitForReady[index] = T
+          file.remove(handlers[[index]]$outfile)
+          file.remove(handlers[[index]]$paramfile)
+          if(removeLogs){
+            file.remove(handlers[[index]]$logfile)
+            file.remove(handlers[[index]]$errfile)
+          }
+        }else{
+          cat("Checking state of",handlers[[index]]$jobname,"\n")
+
+          if(!jobRunning(handlers[[index]]$jobname)){
+            cat("No results and no job running:",handlers[[index]]$jobname,"\n")
+            responses[[index]] = NULL
+            waitForReady[index] = T
+          }
         }
       }
+
     }
     Sys.sleep(increment)
     elapsed = elapsed + increment
