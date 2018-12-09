@@ -37,7 +37,7 @@ runJob = function(token){
   cat("Running job with token",token,"\n")
   params = readRDS(token)
   fun = params$fun
-  params = params$fun = NULL
+  params$fun = NULL
   toSave = list(result=fun(params),
                 params=params)
   saveRDS(toSave,paste0(token,"_out.rds"))
@@ -86,6 +86,7 @@ launchJob = function(parameters,
                    " -o ",logfile.log," -e ",logfile.e)
   cat("The command is\n",command,"\n")
   system(command)
+  Sys.sleep(0.5)
   if(!jobRunning(expid)){
     cat("Something went wrong with the Job\n")
     return(NULL)
