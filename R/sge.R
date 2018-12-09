@@ -39,7 +39,7 @@ runJob = function(token){
   print(myparams)
   targetFunc = myparams$fun
   myparams$fun = NULL
-  toSave = list(result=do.call("targetFunc",myparams),
+  toSave = list(result=do.call(what="targetFunc",args=myparams,quote=T),
                 params=myparams)
   saveRDS(toSave,paste0(token,"_out.rds"))
 }
