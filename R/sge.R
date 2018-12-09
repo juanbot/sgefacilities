@@ -38,6 +38,7 @@ runJob = function(token){
   myparams <- readRDS(token)
   print(myparams)
   targetFunc = myparams$fun
+  myparans$fun = NULL
   toSave = list(result=do.call("targetFunc",myparams),
                 params=myparams)
   saveRDS(toSave,paste0(token,"_out.rds"))
