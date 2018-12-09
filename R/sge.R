@@ -39,7 +39,7 @@ runJob = function(token){
   print(myparams)
   targetFunc = myparams$fun
   myparams$fun = NULL
-  toSave = list(result=do.call(what="targetFunc",args=myparams,quote=T),
+  toSave = list(result=do.call(what="targetFunc",args=list(myparams)),
                 params=myparams)
   saveRDS(toSave,paste0(token,"_out.rds"))
 }
@@ -80,7 +80,7 @@ launchJob = function(parameters,
   logfile.log = paste0(getSGEwd(),"/",expid,".log")
   logfile.e = paste0(getSGEwd(),"/",expid,".e")
   logFiles = list(log=logfile.log,e=logfile.e)
-  command = paste0("echo \"cd coexp; Rscript -e \\\"source(\\\\\\\"sge.R\\\\\\\");",
+  command = paste0("echo \"Rscript -e \\\"library(sgefacilities);",
                    "runJob(token=\\\\\\\"",token,"\\\\\\\")",
                    "\\\"\" | qsub -S /bin/bash -N ",expid," ",
                    clParams,
