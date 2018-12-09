@@ -26,7 +26,7 @@ packJobParameters = function(parameters){
 }
 
 #' Title
-#'
+#'J_Dervis_0.068668.e
 #' @param token
 #'
 #' @return
@@ -36,9 +36,7 @@ packJobParameters = function(parameters){
 runJob = function(token){
   cat("Running job with token",token,"\n")
   params = readRDS(token)
-  fun = params$fun
-  params$fun = NULL
-  toSave = list(result=fun(params),
+  toSave = list(result=params$fun(params),
                 params=params)
   saveRDS(toSave,paste0(token,"_out.rds"))
 }
