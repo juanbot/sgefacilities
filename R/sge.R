@@ -89,10 +89,9 @@ launchJob = function(parameters,
   system(command)
   Sys.sleep(0.5)
   if(!jobRunning(expid)){
-    cat("Something went wrong with the Job\n")
-    return(NULL)
-  }
-  cat("Job",expid,"is queued\n")
+    cat("Something went wrong with the Job????\n")
+  }else
+    cat("Job",expid,"is queued\n")
   return(list(paramfile=token,
               jobname=expid,
               outfile=paste0(token,"_out.rds"),
@@ -114,7 +113,8 @@ launchJob = function(parameters,
 waitForJobs = function(handlers,
                        timeLimit= 24*3600,
                        increment=30,
-                       removeLogs=T){
+                       removeLogs=T,
+                       removeData=T){
 
   waitForReady = rep(F,length(handlers))
   elapsed = 0
@@ -128,8 +128,10 @@ waitForJobs = function(handlers,
           cat("Job from",handlers[[index]]$outfile,"finished\n")
           responses[[index]] = readRDS(handlers[[index]]$outfile)
           waitForReady[index] = T
-          file.remove(handlers[[index]]$outfile)
-          file.remove(handlers[[index]]$paramfile)
+          if(removeData){
+            file.remove(handlers[[index]]$outfile)
+            file.remove(handlers[[index]]$paramfile)
+          }
           if(removeLogs){
             file.remove(handlers[[index]]$logfile)
             file.remove(handlers[[index]]$errfile)
@@ -153,6 +155,76 @@ waitForJobs = function(handlers,
   }
   cat("Done with the",length(handlers),"handlers\n")
   return(responses)
+
+}
+
+collectResults = function(handlers,
+                          removeLogs=T,
+                          removeData=T){
+
+  if(typeof(handlers) == "character")
+    handlers = readRDS(handlers)
+  results = finished = NULL
+
+  for(index in 1:length(handlers)){
+    if(!is.null(handlers[[index]])){
+      if(file.exists(handlers[[index]]$outfile)){
+        #cat("Job from",handlers[[index]]$outfile,"finished\n")
+        results[[index]] = readRDS(handlers[[index]]$outfile)
+        finished = c(finished,index)
+      }
+    }
+  }
+
+  return(list(indexes=finished,results=results))
+}
+
+reportOnJobs = function(handlers){
+  if(typeof(handlers) == "character")
+    handlers = readRDS(handlers)
+
+  running = finished = wrong = NULL
+
+  for(index in 1:length(handlers)){
+    if(!is.null(handlers[[index]])){
+      if(file.exists(handlers[[index]]$outfile)){
+        #cat("Job from",handlers[[index]]$outfile,"finished\n")
+        finished = c(finished,index)
+      }else{
+        if(!jobRunning(handlers[[index]]$jobname)){
+          #cat("No results and no job running:",handlers[[index]]$jobname,"\n")
+          wrong = c(wrong,index)
+        }else{
+          running = c(running,index)
+        }
+      }
+    }
+
+  }
+  cat("Total Jobs",length(handlers),"were launched\n")
+  if(!is.null(running))
+     cat(length(running),"jobs running\n")
+     else
+         cat("No jobs running\n")
+
+  if(!is.null(wrong))
+         cat(length(wrong),"jobs wrong, neither running nor results available\n")
+  else
+    cat("No wrong jobs so far\n")
+
+  if(!is.null(finished))
+    cat(length(finished),"jobs done\n")
+  else
+         cat("No jobs finished\n")
+
+  missing = length(handlers) - length(finished) - length(running) - length(wrong)
+  if(missing)
+    cat(missing,"jobs are missing\n")
+
+  cat("Done with the",length(handlers),"handlers\n")
+  return(list(finished=handlers[finished],
+              running=handlers[running],
+              wrong=handlers[wrong]))
 
 }
 
