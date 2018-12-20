@@ -34,7 +34,7 @@ packJobParameters = function(parameters){
 #'
 #' @examples
 runJob = function(token){
-  cat("Running job with token",token,"\n")
+  cat("Running job with token parameters",names(token),"\n")
   params = readRDS(token)
   fun = params$fun
   params$fun = NULL
