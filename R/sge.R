@@ -19,8 +19,8 @@ setSGEwd = function(wd){
 #' @export
 #'
 #' @examples
-packJobParameters = function(parameters){
-  fname = paste0(getSGEwd(),"/_",as.character(signif(runif(1),5)),".rds")
+packJobParameters = function(parameters,wd="~/tmp/"){
+  fname = paste0(wd,"/_",as.character(signif(runif(1),5)),".rds")
   saveRDS(parameters,fname)
   return(fname)
 }
@@ -52,8 +52,8 @@ runJob = function(token){
 #' @export
 #'
 #' @examples
-jobRunning = function(job){
-  tmpfile = paste0(getSGEwd(),"/qstat.out")
+jobRunning = function(job,wd="~/tmp"){
+  tmpfile = paste0(wd,"/qstat.out")
   system(paste0("qstat > ",tmpfile))
   queue = read.delim(tmpfile)
   if(nrow(queue) > 0){
@@ -76,12 +76,13 @@ jobRunning = function(job){
 #' @examples
 launchJob = function(parameters,
                      clParams="",
+                     wd="~/tmp/",
                      prefix=NULL){
 
   token = packJobParameters(parameters)
   expid = paste0("J_",ifelse(is.null(prefix),"U",prefix),"_",as.character(signif(runif(1),5)))
-  logfile.log = paste0(getSGEwd(),"/",expid,".log")
-  logfile.e = paste0(getSGEwd(),"/",expid,".e")
+  logfile.log = paste0(wd,"/",expid,".log")
+  logfile.e = paste0(wd,"/",expid,".e")
   logFiles = list(log=logfile.log,e=logfile.e)
   command = paste0("echo \"Rscript -e \\\"library(sgefacilities);",
                    "runJob(token=\\\\\\\"",token,"\\\\\\\")",
@@ -91,7 +92,7 @@ launchJob = function(parameters,
   cat("The command is\n",command,"\n")
   system(command)
   Sys.sleep(0.5)
-  if(!jobRunning(expid)){
+  if(!jobRunning(expid,wd=wd)){
     cat("Something went wrong with the Job????\n")
   }else
     cat("Job",expid,"is queued\n")
@@ -118,6 +119,7 @@ waitForJobs = function(handlers,
                        increment=30,
                        removeLogs=T,
                        removeData=T,
+                       wd="~/tmp/",
                        qstatworks=F){
 
   waitForReady = rep(F,length(handlers))
@@ -144,7 +146,7 @@ waitForJobs = function(handlers,
           cat("Checking state of",handlers[[index]]$jobname,"\n")
 
           if(qstatworks){
-            if(!jobRunning(handlers[[index]]$jobname)){
+            if(!jobRunning(handlers[[index]]$jobname,wd=wd)){
               cat("No results and no job running:",handlers[[index]]$jobname,"\n")
               responses[[index]] = NULL
               waitForReady[index] = T
@@ -186,7 +188,7 @@ collectResults = function(handlers,
   return(list(indexes=finished,results=results))
 }
 
-reportOnJobs = function(handlers){
+reportOnJobs = function(handlers,wd="~/tmp/"){
   if(typeof(handlers) == "character")
     handlers = readRDS(handlers)
 
@@ -198,7 +200,7 @@ reportOnJobs = function(handlers){
         #cat("Job from",handlers[[index]]$outfile,"finished\n")
         finished = c(finished,index)
       }else{
-        if(!jobRunning(handlers[[index]]$jobname)){
+        if(!jobRunning(handlers[[index]]$jobname,wd=wd)){
           #cat("No results and no job running:",handlers[[index]]$jobname,"\n")
           wrong = c(wrong,index)
         }else{
