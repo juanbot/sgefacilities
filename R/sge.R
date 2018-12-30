@@ -26,7 +26,7 @@ packJobParameters = function(parameters){
 }
 
 #' Title
-#'J_Dervis_0.068668.e
+#'
 #' @param token
 #'
 #' @return
@@ -36,7 +36,6 @@ packJobParameters = function(parameters){
 runJob = function(token){
   cat("Running job with token",token,"\n")
   myparams <- readRDS(token)
-  print(myparams)
   targetFunc = myparams$fun
   myparams$fun = NULL
   toSave = list(result=do.call(what="targetFunc",args=myparams),
