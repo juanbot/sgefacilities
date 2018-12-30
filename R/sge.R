@@ -1,15 +1,5 @@
 
 
-SGEwd = "~/tmp/"
-
-
-getSGEwd = function(){
-  return(SGEwd)
-}
-
-setSGEwd = function(wd){
-  SGEwd <<- wd
-}
 
 #' Title Preparing parameters to send to Job
 #'
@@ -79,7 +69,7 @@ launchJob = function(parameters,
                      wd="~/tmp/",
                      prefix=NULL){
 
-  token = packJobParameters(parameters)
+  token = packJobParameters(parameters,wd=wd)
   expid = paste0("J_",ifelse(is.null(prefix),"U",prefix),"_",as.character(signif(runif(1),5)))
   logfile.log = paste0(wd,"/",expid,".log")
   logfile.e = paste0(wd,"/",expid,".e")
