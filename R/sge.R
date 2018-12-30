@@ -122,6 +122,7 @@ waitForJobs = function(handlers,
         cat("Checking for",handlers[[index]]$outfile,"\n")
         if(file.exists(handlers[[index]]$outfile)){
           cat("Job from",handlers[[index]]$outfile,"finished\n")
+          Sys.sleep(5)
           responses[[index]] = readRDS(handlers[[index]]$outfile)
           waitForReady[index] = T
           if(removeData){
