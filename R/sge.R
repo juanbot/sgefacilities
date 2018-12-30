@@ -117,7 +117,8 @@ waitForJobs = function(handlers,
                        timeLimit= 24*3600,
                        increment=30,
                        removeLogs=T,
-                       removeData=T){
+                       removeData=T,
+                       qstatworks=F){
 
   waitForReady = rep(F,length(handlers))
   elapsed = 0
@@ -142,11 +143,14 @@ waitForJobs = function(handlers,
         }else{
           cat("Checking state of",handlers[[index]]$jobname,"\n")
 
-          if(!jobRunning(handlers[[index]]$jobname)){
-            cat("No results and no job running:",handlers[[index]]$jobname,"\n")
-            responses[[index]] = NULL
-            waitForReady[index] = T
+          if(qstatworks){
+            if(!jobRunning(handlers[[index]]$jobname)){
+              cat("No results and no job running:",handlers[[index]]$jobname,"\n")
+              responses[[index]] = NULL
+              waitForReady[index] = T
+            }
           }
+
         }
       }
 
