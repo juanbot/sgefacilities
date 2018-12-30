@@ -55,9 +55,13 @@ runJob = function(token){
 jobRunning = function(job){
   tmpfile = paste0(getSGEwd(),"/qstat.out")
   system(paste0("qstat > ",tmpfile))
-  isit = length(unlist(apply(read.delim(tmpfile),1,function(x){ grep(job,x)}))) > 0
-  file.remove(tmpfile)
-  return(isit)
+  queue = read.delim(tmpfile)
+  if(nrow(queue) > 0){
+    isit = length(unlist(apply(queue,1,function(x){ grep(job,x)}))) > 0
+    file.remove(tmpfile)
+    return(isit)
+  }
+  return(T)
 }
 
 #' Title
