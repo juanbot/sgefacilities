@@ -159,6 +159,7 @@ waitForJobs = function(handlers,
     elapsed = elapsed + increment
     cat("Waking up, still",sum(!waitForReady),"files to read out of",length(waitForReady),
         " and ",timeLimit-elapsed," seconds to go\n")
+    flush.console()
   }
   cat("Done with the",length(handlers),"handlers\n")
   return(responses)
