@@ -42,7 +42,7 @@ runJob = function(token){
 #' @export
 #'
 #' @examples
-jobRunning = function(job){
+jobRunning = function(job,wd){
   tmpfile = paste0(wd,"/qstat.out")
   queue = system("qstat",intern=T)
   if(length(queue) > 0){
@@ -87,7 +87,7 @@ launchJob = function(parameters,
   cat("The command is\n",command,"\n")
   jobid = system(command,intern=T)
   Sys.sleep(0.5)
-  if(!jobRunning(jobid)){
+  if(!jobRunning(jobid,wd)){
     cat("Something went wrong with the Job????\n")
   }else
     cat("Job",jobid,"is queued\n")
@@ -144,7 +144,7 @@ waitForJobs = function(handlers,
           cat("Checking state of",handlers[[index]]$jobname,"\n")
 
           if(qstatworks){
-            if(!jobRunning(handlers[[index]]$jobid)){
+            if(!jobRunning(handlers[[index]]$jobid,wd)){
               cat("No results and no job running:",handlers[[index]]$jobname,"\n")
               responses[[index]] = NULL
               waitForReady[index] = T
@@ -211,7 +211,7 @@ reportOnJobs = function(handlers,wd="~/tmp/"){
         #cat("Job from",handlers[[index]]$outfile,"finished\n")
         finished = c(finished,index)
       }else{
-        if(!jobRunning(handlers[[index]]$jobid)){
+        if(!jobRunning(handlers[[index]]$jobid,wd)){
           #cat("No results and no job running:",handlers[[index]]$jobname,"\n")
           wrong = c(wrong,index)
         }else{
