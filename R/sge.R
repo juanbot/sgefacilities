@@ -15,7 +15,7 @@ packJobParameters = function(parameters,wd="~/tmp/"){
   return(fname)
 }
 
-#' Title
+#' Title business logic of the Job put to work
 #'
 #' @param token
 #'
@@ -72,6 +72,7 @@ jobRunning = function(job,wd){
 launchJob = function(parameters,
                      clParams="",
                      wd="~/tmp/",
+                     justPrepareForLaunch=F,
                      prefix=NULL){
 
   token = packJobParameters(parameters,wd=wd)
@@ -85,18 +86,40 @@ launchJob = function(parameters,
                    clParams,
                    " -o ",logfile.log," -e ",logfile.e)
   cat("The command is\n",command,"\n")
-  jobid = system(command,intern=T)
-  Sys.sleep(0.5)
-  if(!jobRunning(jobid,wd)){
-    cat("Something went wrong with the Job????\n")
+  if(!justPrepareForLaunch){
+    jobid = system(command,intern=T)
+    Sys.sleep(0.5)
+    if(!jobRunning(jobid,wd)){
+      cat("Something went wrong with the Job????\n")
+    }else
+      cat("Job",jobid,"is queued\n")
   }else
-    cat("Job",jobid,"is queued\n")
+    jobid="none"
+
   return(list(paramfile=token,
               jobname=expid,
               jobid=jobid,
+              wd=wd,
+              command=command,
               outfile=paste0(token,"_out.rds"),
               logfile=logfile.log,
               errfile=logfile.e))
+}
+
+submitJobs = function(handlers){
+  for(handleri in 1:length(handlers)){
+    hanlder = handlers[[handleri]]
+    cat("The command is\n",handler$command,"\n")
+    jobid = system(handler$command,intern=T)
+    if(!jobRunning(jobid,handler$wd)){
+      cat("Something went wrong with the Job????\n")
+    }else
+      cat("Job",jobid,"is queued\n")
+    handler$jobid = jobid
+    handlers[[i]] = handler
+
+  }
+  return(handlers)
 }
 
 #' Title Wait for jobs to finish and collect results
