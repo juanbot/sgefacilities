@@ -88,7 +88,6 @@ launchJob = function(parameters,
   cat("The command is\n",command,"\n")
   if(!justPrepareForLaunch){
     jobid = system(command,intern=T)
-    Sys.sleep(0.5)
     if(!jobRunning(jobid,wd)){
       cat("Something went wrong with the Job????\n")
     }else
@@ -108,7 +107,7 @@ launchJob = function(parameters,
 
 submitJobs = function(handlers){
   for(handleri in 1:length(handlers)){
-    hanlder = handlers[[handleri]]
+    handler = handlers[[handleri]]
     cat("The command is\n",handler$command,"\n")
     jobid = system(handler$command,intern=T)
     if(!jobRunning(jobid,handler$wd)){
@@ -116,7 +115,7 @@ submitJobs = function(handlers){
     }else
       cat("Job",jobid,"is queued\n")
     handler$jobid = jobid
-    handlers[[i]] = handler
+    handlers[[handleri]] = handler
 
   }
   return(handlers)
