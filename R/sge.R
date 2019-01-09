@@ -106,6 +106,8 @@ launchJob = function(parameters,
 }
 
 submitJobs = function(handlers){
+  newhandlers = NULL
+
   for(handleri in 1:length(handlers)){
     handler = handlers[[handleri]]
     cat("The command is\n",handler$command,"\n")
@@ -115,10 +117,9 @@ submitJobs = function(handlers){
     }else
       cat("Job",jobid,"is queued\n")
     handler$jobid = jobid
-    handlers[[handleri]] = handler
-
+    newhandlers[[handler$jobname]] = handler
   }
-  return(handlers)
+  return(newhandlers)
 }
 
 #' Title Wait for jobs to finish and collect results
@@ -141,19 +142,21 @@ waitForJobs = function(handlers,
                        wd="~/tmp/",
                        qstatworks=F){
 
-  waitForReady = rep(F,length(handlers))
+
+  waitForReady = names(handlers)
   elapsed = 0
   responses = NULL
-  while(sum(waitForReady) < length(handlers) & elapsed < timeLimit){
-    indexes = which(!waitForReady)
-    for(index in indexes){
+
+  while(length(waitForReady) > 0 & elapsed < timeLimit){
+    for(index in waitForReady){
       if(!is.null(handlers[[index]])){
         cat("Checking for",handlers[[index]]$outfile,"\n")
         if(file.exists(handlers[[index]]$outfile)){
           cat("Job from",handlers[[index]]$outfile,"finished\n")
           Sys.sleep(5)
           responses[[index]] = readRDS(handlers[[index]]$outfile)
-          waitForReady[index] = T
+          waitForReady = waitForReady[waitForReady != index]
+
           if(removeData){
             file.remove(handlers[[index]]$outfile)
             file.remove(handlers[[index]]$paramfile)
@@ -169,7 +172,8 @@ waitForJobs = function(handlers,
             if(!jobRunning(handlers[[index]]$jobid,wd)){
               cat("No results and no job running:",handlers[[index]]$jobname,"\n")
               responses[[index]] = NULL
-              waitForReady[index] = T
+              waitForReady = waitForReady[waitForReady != index]
+
             }
           }
 
@@ -179,7 +183,7 @@ waitForJobs = function(handlers,
     }
     Sys.sleep(increment)
     elapsed = elapsed + increment
-    cat("Waking up, still",sum(!waitForReady),"files to read out of",length(waitForReady),
+    cat("Waking up, still",length(waitForReady),"files to read out of",length(handlers),
         " and ",timeLimit-elapsed," seconds to go\n")
     flush.console()
   }
@@ -206,19 +210,19 @@ collectResults = function(handlers,
 
   if(typeof(handlers) == "character")
     handlers = readRDS(handlers)
-  results = finished = NULL
+  results = NULL
 
-  for(index in 1:length(handlers)){
+  for(index in names(handlers)){
     if(!is.null(handlers[[index]])){
       if(file.exists(handlers[[index]]$outfile)){
         #cat("Job from",handlers[[index]]$outfile,"finished\n")
         results[[index]] = readRDS(handlers[[index]]$outfile)
-        finished = c(finished,index)
+
       }
     }
   }
 
-  return(list(indexes=finished,results=results))
+  return(list(indexes=names(results),results=results))
 }
 
 reportOnJobs = function(handlers,wd="~/tmp/"){
@@ -227,7 +231,7 @@ reportOnJobs = function(handlers,wd="~/tmp/"){
 
   running = finished = wrong = NULL
 
-  for(index in 1:length(handlers)){
+  for(index in names(handlers)){
     if(!is.null(handlers[[index]])){
       if(file.exists(handlers[[index]]$outfile)){
         #cat("Job from",handlers[[index]]$outfile,"finished\n")
