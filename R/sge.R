@@ -105,19 +105,29 @@ launchJob = function(parameters,
               errfile=logfile.e))
 }
 
-submitJobs = function(handlers){
+submitJobs = function(handlers,batchSize=1000,timePerBatch=1800){
   newhandlers = NULL
-
-  for(handleri in 1:length(handlers)){
-    handler = handlers[[handleri]]
-    cat("The command is\n",handler$command,"\n")
-    jobid = system(handler$command,intern=T)
-    if(!jobRunning(jobid,handler$wd)){
-      cat("Something went wrong with the Job????\n")
-    }else
-      cat("Job",jobid,"is queued\n")
-    handler$jobid = jobid
-    newhandlers[[handler$jobname]] = handler
+  packs = seq(1,length(handlers),batchSize)
+  for(pack in packs){
+    if(pack + batchSize > length(handlers))
+      right = length(handlers)
+    else
+      right = pack + batchSize - 1
+    bhandlers = names(handlers)[pack:right]
+    cat("Qsubmitting from",pack,"to",right,"jobs\n")
+    for(handleri in bhandlers){
+      handler = handlers[[handleri]]
+      cat("The command is\n",handler$command,"\n")
+      jobid = system(handler$command,intern=T)
+      if(!jobRunning(jobid,handler$wd)){
+        cat("Something went wrong with the Job????\n")
+      }else
+        cat("Job",jobid,"is queued\n")
+      handler$jobid = jobid
+      newhandlers[[handler$jobname]] = handler
+    }
+    if(which(packs == pack) < length(packs))
+      Sys.sleep(timePerBatch)
   }
   return(newhandlers)
 }
@@ -175,6 +185,8 @@ waitForJobs = function(handlers,
               waitForReady = waitForReady[waitForReady != index]
 
             }
+          }else{
+            cat("We know nothing about",handlers[[index]]$jobname,"so far\n")
           }
 
         }
@@ -249,19 +261,19 @@ reportOnJobs = function(handlers,wd="~/tmp/"){
   }
   cat("Total Jobs",length(handlers),"were launched\n")
   if(!is.null(running))
-     cat(length(running),"jobs running\n")
-     else
-         cat("No jobs running\n")
+    cat(length(running),"jobs running\n")
+  else
+    cat("No jobs running\n")
 
   if(!is.null(wrong))
-         cat(length(wrong),"jobs wrong, neither running nor results available\n")
+    cat(length(wrong),"jobs wrong, neither running nor results available\n")
   else
     cat("No wrong jobs so far\n")
 
   if(!is.null(finished))
     cat(length(finished),"jobs done\n")
   else
-         cat("No jobs finished\n")
+    cat("No jobs finished\n")
 
   missing = length(handlers) - length(finished) - length(running) - length(wrong)
   if(missing)
@@ -271,6 +283,27 @@ reportOnJobs = function(handlers,wd="~/tmp/"){
   return(list(finished=handlers[finished],
               running=handlers[running],
               wrong=handlers[wrong]))
+
+}
+
+#' Title
+#'
+#' @param handlers
+#' @param wd
+#'
+#' @return
+#' @export
+#'
+#' @examples
+cleanUpJobs = function(handlers,
+                       wd="~/tmp/"){
+
+  for(index in names(handlers)){
+    file.remove(handlers[[index]]$outfile)
+    file.remove(handlers[[index]]$paramfile)
+    file.remove(handlers[[index]]$logfile)
+    file.remove(handlers[[index]]$errfile)
+  }
 
 }
 
