@@ -8,7 +8,7 @@ output: html_document
 
 # Intro
 
-This is a software to help submitting, controlling and recovering results from jobs in an SGE environment. Just started with the implementation but this will grow and get more stable soon.
+This is a software to help submitting, controlling and recovering results from jobs in an SGE environment. Just started with the implementation but this will grow and get more stable soon. This readme has three parts. The installation and example of use sections, introducing the R package and how to use it. The third part is a section on how to use a cluster from Unix-like systems. There is a lack of standardization in this area and very irregular documentation. I try to summaryse all the basics you need to survive sending your scripts to the cluster. 
 
 # Install
 
@@ -25,7 +25,7 @@ withr::with_libpaths(new="~/R/x86_64-redhat-linux-gnu-library/3.5/",
   devtools::install_github(repo="juanbot/sgefacilities"))`
 ```
 
-#An example on how to use it
+# An example on how to use it
 
 First of all, we need to define the function to launch in the cluster, for example, 
 
