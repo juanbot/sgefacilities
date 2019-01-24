@@ -213,6 +213,11 @@ And that would do the job. If the script is so simple you don´t want to write o
 > echo "Rscript -e \"source(\\\"~/someSourceCodeIneed.R\\\"); library(MyLibrary); myFunction(input_a=\\\”examplestring\\\”,param_b=3)\"" | qsub -S /bin/bash -N MyJob -o ~/mylogfolder/Job.o -e ~/mylogfolder/Job.e
 ```
 
+# Credits
 
-
+Juan A. Botía
+juanbotiablaya at gmail.com
+Twitter @juanbotiablaya
+Professor in Computer Science and Artificial Intelligence, Universidad de Murcia, Spain
+Hon. Senior Research Fellow, Institute of Neurology, University College London, UK
 
