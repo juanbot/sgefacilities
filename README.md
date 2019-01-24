@@ -166,38 +166,52 @@ And after some seconds it will finish and disappear. What did the job run actual
 
 But where is the result of the ls command? As we indicated with the -o flag, all the standard output of the job will be stored at ~/mylogfolder/logfile.o. And the errors that might occur can be found at ~/mylogfolder/logfile.e. You can use whichever names and location you want for your files. Obviously, the folder must exist before you run the job. So if we do
 
+```
 > ls ~/mylogfolder/
 logfile.e  logfile.o
+```
 
 And the files are there. And if we see what is inside we´ll see the result of the ls command. Note that if the result of your code is not something that should go to the standard output as, for example, a matrix or a data.frame, then that should be permanently stored in a file before the script ends. This is not done by the cluster for you. You have to do it at your code. As in this other example: 
 
+```
 echo "ls -lt > ~/mylogfolder/myresult.txt" | qsub -S /bin/bash -N MyExampleJob -o ~/mylogfolder/logfile.o -e ~/mylogfolder/logfile.e
+```
 
 You will see now there is nothing at the .o file as the result was stored at the myresult.txt file. 
 
 The only ways in which we can modify the queue is deleting jobs you do not need. For example, if there is a job with id (first column of the results to qstat) 37650.scc_ser_1 and it belongs to you, then you can simply do
 
+```
 > qdel 37650.scc_ser_1
+```
 
 And the job would be stopped. Normally when you launch many jobs in a row, they have correlative ID numbers as in 37650.scc_ser_1, 37651.scc_ser_1, 37652.scc_ser_1, …
 
 You can kill a bunch of correlative jobs with this simple shell command
 
+```
 > for i in {37650.. 37652}; do qdel $i.scc_ser_1; done
+```
 
 Normally you would have to do this when you realise that you did some mistake specifying the parameters to jobs or that they won´t work anyway. Better not to waste resources in the cluster waiting for them to finish. 
 
 Now you want to run an R script which is self-contained, i.e. you would normally do, from the R console, 
 
-R> source(“myscript.R”)
+```r
+source(“myscript.R”)
+```
 
 And it would work. But you want to do it in the cluster. You can use, from your linux shell
 
+```
 > echo "Rscript ~/myscript.R" | qsub -N MyScriptJob -o ~/mylogfolder/Job.o -e ~/mylogfolder/Job.e
+```
 
 And that would do the job. If the script is so simple you don´t want to write one R file just for that, then you can do the following. In this example, we first load some code I need for the rest to work properly, then a library and then I call a function with parameters. Note how we use the scape character “\” so the different softwares that process the string do not confound the inner “ characters with the end of the string.
 
+```
 > echo "Rscript -e \"source(\\\"~/someSourceCodeIneed.R\\\"); library(MyLibrary); myFunction(input_a=\\\”examplestring\\\”,param_b=3)\"" | qsub -S /bin/bash -N MyJob -o ~/mylogfolder/Job.o -e ~/mylogfolder/Job.e
+```
 
 
 
